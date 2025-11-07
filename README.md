@@ -41,7 +41,12 @@ Create a conda environment and install dependencies:
 ```
 conda create -n self_forcing python=3.10 -y
 conda activate self_forcing
+(note: removed tensorrt - karthik)
 pip install -r requirements.txt
+
+(note: karthik # Install the latest version which should have CUDA 13 support
+CUDA_HOME=/usr/local/cuda-12.8 TORCH_CUDA_ARCH_LIST="8.0;9.0" pip install flash-attn --no-build-isolation --no-cache-dir)
+
 pip install flash-attn --no-build-isolation
 python setup.py develop
 ```

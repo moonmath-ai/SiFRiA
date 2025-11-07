@@ -29,7 +29,8 @@ scikit-image
 huggingface_hub[cli]
 dominate
 nvidia-pyindex
-nvidia-tensorrt
+# causes error remove and not used https://github.com/guandeh17/Self-Forcing/issues/8
+# nvidia-tensorrt
 pycuda
 onnx
 onnxruntime
