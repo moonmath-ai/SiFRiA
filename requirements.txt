@@ -11,7 +11,8 @@ easydict
 ftfy
 dashscope
 imageio-ffmpeg
-numpy==1.24.4
+#numpy==1.24.4
+numpy>=1.25.0
 wandb
 omegaconf
 einops

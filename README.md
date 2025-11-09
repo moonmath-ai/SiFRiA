@@ -39,13 +39,19 @@ Other hardware setup could also work but hasn't been tested.
 ## Installation
 Create a conda environment and install dependencies:
 ```
-conda create -n self_forcing python=3.10 -y
-conda activate self_forcing
+# conda create -n self_forcing python=3.10 -y
+# conda activate self_forcing
+conda create -n self_forcing_cuda13 python=3.10 -y
+conda activate self_forcing_cuda13
+export PATH=/usr/local/cuda-13.0/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-13.0/lib64:$LD_LIBRARY_PATH
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+
 (note: removed tensorrt - karthik)
 pip install -r requirements.txt
 
-(note: karthik # Install the latest version which should have CUDA 13 support
-CUDA_HOME=/usr/local/cuda-12.8 TORCH_CUDA_ARCH_LIST="8.0;9.0" pip install flash-attn --no-build-isolation --no-cache-dir)
+(note: karthik # Install the latest version which should have CUDA 13 support TODO)
+TORCH_CUDA_ARCH_LIST="8.0;9.0" pip install flash-attn --no-build-isolation --no-cache-dir
 
 pip install flash-attn --no-build-isolation
 python setup.py develop
