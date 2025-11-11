@@ -37,7 +37,7 @@ We tested this repo on the following setup:
 Other hardware setup could also work but hasn't been tested.
 
 ## Installation
-Create a conda environment and install dependencies:
+Create a conda environment and install dependencies: (modified for cuda13 karthik)
 ```
 # conda create -n self_forcing python=3.10 -y
 # conda activate self_forcing
@@ -50,7 +50,7 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
 (note: removed tensorrt - karthik)
 pip install -r requirements.txt
 
-(note: karthik # Install the latest version which should have CUDA 13 support TODO)
+(note: karthik # Install the latest version which should have CUDA 13 support)
 TORCH_CUDA_ARCH_LIST="8.0;9.0" pip install flash-attn --no-build-isolation --no-cache-dir
 
 pip install flash-attn --no-build-isolation
