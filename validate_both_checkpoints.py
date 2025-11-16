@@ -31,9 +31,9 @@ ODERegression._initialize_models = _patched_initialize_models
 def calculate_reconstruction_loss_for_checkpoint(
     config_path: str, 
     checkpoint_path: str, 
-    data_path: str,
+    batch: dict,
     checkpoint_name: str,
-    batch_size: int = 4
+    validation_seed: int
 ):
     """Validates checkpoint and returns MSE reconstruction loss."""
     print(f"\n{'='*80}")
@@ -44,7 +44,7 @@ def calculate_reconstruction_loss_for_checkpoint(
     config = OmegaConf.load(config_path)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
-    print(f"Device: {device}, Batch size: {batch_size}")
+    print(f"Device: {device}")
     
     model = ODERegression(config, device=device)
     
@@ -66,44 +66,30 @@ def calculate_reconstruction_loss_for_checkpoint(
     
     # --- 3.3 Device Setup --- one gpu for now
     model.generator.to(device, dtype=model.dtype)
-    model.text_encoder.to(device)
+    model.text_encoder.to(device, dtype=model.dtype)
     
     if hasattr(model, 'denoising_step_list'):
         model.denoising_step_list = model.denoising_step_list.to(device)
     
     model.eval()
 
-    # --- 3.4 Dataset and DataLoader Setup ---
-    max_samples = max(100, batch_size * 10)
-    dataset = ODERegressionLMDBDataset(data_path, max_pair=max_samples)
-    dataloader = torch.utils.data.DataLoader(
-        dataset, 
-        batch_size=batch_size, 
-        shuffle=False,
-        num_workers=min(4, batch_size),
-        pin_memory=torch.cuda.is_available()
-    )
-    
-    try:
-        batch = next(iter(dataloader))
-    except StopIteration:
-        print("Error: Dataset is empty.")
-        return None
-        
+    # --- 3.4 Batch Preparation ---
     text_prompts = batch["prompts"]
     ode_latent = batch["ode_latent"].to(device, dtype=model.dtype)
     ground_truth_latent = ode_latent[:, -1].detach()
 
     # --- 3.5 Inference and Loss Calculation ---
     with torch.no_grad():
-        # Text encoding (Float32 output)
+        # Set seed immediately before timestep sampling for perfect reproducibility
+        set_seed(validation_seed)
+        
+        # Text encoding
         conditional_dict = model.text_encoder(text_prompts=text_prompts)
-        # Convert to BFloat16 to match generator dtype (another debug)
-        conditional_dict = {k: v.to(dtype=model.dtype) if isinstance(v, torch.Tensor) else v 
-                           for k, v in conditional_dict.items()}
+        
+        # Sample random intermediate timestep (the actual training objective)
+        noisy_input, timestep = model._prepare_generator_input(ode_latent=ode_latent)
         
         # Generator forward pass
-        noisy_input, timestep = model._prepare_generator_input(ode_latent=ode_latent)
         _, prediction = model.generator(
             noisy_image_or_video=noisy_input,
             conditional_dict=conditional_dict,
@@ -138,22 +124,49 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    # --- 4.2 Validate ODE Checkpoint ---
+    # Use a constant validation seed
+    VAL_SEED = 42
+    
+    # --- 4.2 Load Data Once (For Perfect Reproducibility) ---
+    print(f"\nLoading data from: {args.data_path}")
+    print(f"Batch size: {args.batch_size}")
+    
+    # Set seed for reproducible data loading
+    set_seed(VAL_SEED)
+    
+    max_samples = max(100, args.batch_size * 10)
+    dataset = ODERegressionLMDBDataset(args.data_path, max_pair=max_samples)
+    dataloader = torch.utils.data.DataLoader(
+        dataset, 
+        batch_size=args.batch_size, 
+        shuffle=False,
+        num_workers=min(4, args.batch_size),
+        pin_memory=torch.cuda.is_available()
+    )
+    
+    try:
+        batch = next(iter(dataloader))
+        print(f"Loaded batch with {len(batch['prompts'])} samples")
+    except StopIteration:
+        print("Error: Dataset is empty.")
+        exit(1)
+    
+    # --- 4.3 Validate ODE Checkpoint ---
     ode_loss = calculate_reconstruction_loss_for_checkpoint(
-        args.ode_config, args.ode_checkpoint, args.data_path,
-        "ODE Init Checkpoint", args.batch_size
+        args.ode_config, args.ode_checkpoint, batch,
+        "ODE Init Checkpoint", VAL_SEED
     )
     
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
     
-    # --- 4.3 Validate DMD Checkpoint ---
+    # --- 4.4 Validate DMD Checkpoint ---
     dmd_loss = calculate_reconstruction_loss_for_checkpoint(
-        args.dmd_config, args.dmd_checkpoint, args.data_path,
-        "DMD Checkpoint", args.batch_size
+        args.dmd_config, args.dmd_checkpoint, batch,
+        "DMD Checkpoint", VAL_SEED
     )
     
-    # --- 4.4 Comparison Summary ---
+    # --- 4.5 Comparison Summary ---
     print(f"\n{'='*80}")
     print("COMPARISON SUMMARY")
     print(f"{'='*80}")

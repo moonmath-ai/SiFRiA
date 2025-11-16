@@ -1,12 +1,7 @@
 # Configuration for ODE checkpoint validation
 # This config contains all necessary parameters for ODERegression model
 
-# Model architecture settings
-model_kwargs:
-  timestep_shift: 8.0
-
 # Denoising settings - required by BaseModel
-# NOTE: The mixkit_ode_lmdb dataset has only 4 denoising steps
 denoising_step_list:
   - 1000
   - 750
