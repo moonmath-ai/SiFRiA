@@ -1,0 +1,31 @@
+# Configuration for DMD checkpoint validation
+# This config is specifically for the self_forcing_dmd checkpoint
+
+# Model architecture settings
+model_kwargs:
+  timestep_shift: 5.0  # Note: DMD uses 5.0 instead of 8.0
+
+# Denoising settings - required by BaseModel
+# NOTE: The mixkit_ode_lmdb dataset has only 4 denoising steps
+# NOTE: For validation with ODERegression (which has no scheduler), we disable warping
+denoising_step_list:
+  - 1000
+  - 750
+  - 500
+  - 250
+warp_denoising_step: false  # Note: DMD was trained with true, but validation uses false due to scheduler issues
+
+# Training/inference settings
+mixed_precision: true
+gradient_checkpointing: false
+i2v: false
+num_frame_per_block: 3  # DMD was trained with block size 3 (from self_forcing_dmd config)
+independent_first_frame: false
+
+# Checkpoint settings (optional, can be overridden via command line)
+generator_ckpt: false
+
+# Additional settings that may be referenced
+seed: 0
+weight_decay: 0.0
+
