@@ -43,7 +43,7 @@ class ODERegression(BaseModel):
         # Step 2: Initialize all hyperparameters
         self.timestep_shift = getattr(args, "timestep_shift", 1.0)
 
-    def _initialize_models(self, args):
+    def _initialize_models(self, args, device):
         self.generator = WanDiffusionWrapper(**getattr(args, "model_kwargs", {}), is_causal=True)
         self.generator.model.requires_grad_(True)
 
@@ -84,7 +84,7 @@ class ODERegression(BaseModel):
                 -1, -1, -1, num_channels, height, width).to(self.device)
         ).squeeze(1)
 
-        timestep = self.denoising_step_list[index].to(self.device)
+        timestep = self.denoising_step_list[index.cpu()].to(self.device)
 
         # if self.extra_noise_step > 0:
         #     random_timestep = torch.randint(0, self.extra_noise_step, [

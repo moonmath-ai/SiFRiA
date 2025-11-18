@@ -1,6 +1,7 @@
 # Original CausVid ODE configuration for inference
 # This is the exact config used for training the ODE init checkpoint
 
+trainer: ode
 model_name: causal_wan
 
 generator_grad:
@@ -18,23 +19,25 @@ text_encoder_fsdp_wrap_strategy: size
 mixed_precision: true
 seed: 0
 
-wandb_host: WANDB_HOST
-wandb_key: WANDB_KEY
-wandb_entity: tyin
-wandb_project: causvid
-wandb_name: wan_causal_ode
+wandb_host: https://api.wandb.ai
+wandb_key: bf3087c2d3a5361a4b222a9c1529e9017ddb630a
+wandb_entity: lnm-
+wandb_project: self_forcing_ode_2.1_1.3b
+wandb_name: mixkit_ode_1537samples
 
 sharding_strategy: hybrid_full
 lr: 2.0e-06
 beta1: 0.9
 beta2: 0.999
 
-data_path: mixkit_ode_lmdb
-batch_size: 2
-log_iters: 200
-output_path: /mnt/localssd/wan_causal_ode
+data_path: /root/karthik/lmdb/mixkit_ode_lmdb
+batch_size: 2  # Per GPU (8 GPUs = 16 total batch size)
+total_batch_size: 16  # 8 GPUs x 2 batch_size
+log_iters: 200  # Save checkpoint every 200 iterations
+max_iters: 1000  # Stop training after 1000 iterations (~10 epochs)
+output_path: /root/karthik/ode_checkpoints
 
-distillation_loss: ode
+distribution_loss: ode
 gradient_checkpointing: true
 num_frame_per_block: 3
 warp_denoising_step: false

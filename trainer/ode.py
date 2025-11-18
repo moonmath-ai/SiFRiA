@@ -223,6 +223,7 @@ class Trainer:
             gc.collect()
 
     def train(self):
+        max_iters = getattr(self.config, "max_iters", None)
         while True:
             self.train_one_step()
             if (not self.config.no_save) and self.step % self.config.log_iters == 0:
@@ -240,3 +241,14 @@ class Trainer:
                     self.previous_time = current_time
 
             self.step += 1
+            
+            # Stop training if max_iters is reached
+            if max_iters is not None and self.step >= max_iters:
+                if self.is_main_process:
+                    print(f"\n{'='*80}")
+                    print(f"Reached max_iters={max_iters}. Training completed!")
+                    print(f"{'='*80}\n")
+                    if not self.config.no_save:
+                        print("Saving final checkpoint...")
+                        self.save()
+                break
