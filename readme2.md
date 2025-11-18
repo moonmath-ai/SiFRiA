@@ -19,4 +19,5 @@ JIT calls)
     MSE Loss: 0.086426
     Per-sample: [‘0.019287’, ‘0.103027’, ‘0.036377’, ‘0.074707’, ‘0.106934’, ‘0.149414’, ‘0.071289’, ‘0.044434’, ‘0.045654’, ‘0.068848’, ‘0.066895’, ‘0.114746’, ‘0.102051’, ‘0.079102’, ‘0.047363’, ‘0.032227’, ‘0.055420’, ‘0.146484’, ‘0.116699’, ‘0.163086’, ‘0.049072’, ‘0.359375’, ‘0.065430’, ‘0.039062’, ‘0.017822’, ‘0.200195’, ‘0.121094’, ‘0.032471’, ‘0.039307’, ‘0.092285’, ‘0.045898’, ‘0.056396’]
     ```
-
+    * [train_ode.sh](./train_ode.sh) runs the basic training algorithm for ode pretraining and stores outputs in the specified location. It uses [causal ode config](./configs/wan_causal_ode.yaml). 
+        * [compare_ode_iter.py](./compare_ode_iter.sh) just runs inference for all the ode checkpoints, by default ode checkpoints are saved after 200 iters, with max iter = 1000.   
