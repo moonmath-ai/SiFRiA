@@ -1,0 +1,21 @@
+__pycache__
+*.egg-info
+
+# Security: Never commit API keys or secrets
+.env
+.env.local
+*_secret.yaml
+*_private.yaml
+set_wandb_key.sh
+
+wan_models
+checkpoints
+videos
+prompts/vidprom_filtered_extended.txt
+prompts/problematic_prompts.txt
+prompts/test_prompts_dset.txt
+prompts/test_prompts_off_dset.txt
+prompts/dset_prompt_subset.txt
+prompts/test_prompts_off_dset_hyper_extended.txt
+prompts/vidprom_filtered_extended_16k.txt
+prompts/gold.txt

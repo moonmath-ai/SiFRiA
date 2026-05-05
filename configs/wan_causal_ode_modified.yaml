@@ -1,0 +1,59 @@
+# Original CausVid ODE configuration for inference
+# This is the exact config used for training the ODE init checkpoint
+
+trainer: ode
+model_name: causal_wan
+
+generator_grad:
+  model: true
+
+denoising_step_list:
+- 1000
+- 750
+- 500
+- 250
+
+generator_task: causal_video
+generator_fsdp_wrap_strategy: size
+text_encoder_fsdp_wrap_strategy: size
+mixed_precision: true
+seed: 0
+
+wandb_host: https://api.wandb.ai
+wandb_key: ${WANDB_API_KEY}  # Set via environment variable for security
+wandb_entity: lnm-
+wandb_project: self_forcing_ode_2.1_1.3b_data_gs_6_shift_5
+wandb_name: ode_vidprom_samples
+
+sharding_strategy: hybrid_full
+lr: 2.0e-06
+beta1: 0.9
+beta2: 0.999
+# generator_ckpt: ${oc.env:ODE_CKPT_DIR,/data/karthik_data/expt_2_1_1_3b_ode}/checkpoint_model_000750/model.pt
+data_path: ${oc.env:LMDB_DIR,/data/karthik_data/lmdb/vidprom_ode_lmdb}
+batch_size: 8  # Per GPU
+total_batch_size: 64  # 8 GPUs x 8 batch_size
+log_iters: 250  # Save checkpoint every 250 iterations
+max_iters: 3000  # Stop training after reaching this many iterations (will save at 250, 500, 750, 1000) 
+output_path: ${oc.env:ODE_CKPT_DIR,/data/karthik_data/expt_2_1_1_3b_ode}
+
+distribution_loss: ode
+gradient_checkpointing: true
+num_frame_per_block: 3
+warp_denoising_step: true
+
+# Video generation shape for inference
+image_or_video_shape:
+- 1
+- 21
+- 16
+- 60
+- 104
+
+# Model kwargs - must match data generation settings
+model_kwargs:
+  timestep_shift: 5.0
+
+# Optional negative prompt (Chinese + English)
+negative_prompt: '色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走'
+
