@@ -3,10 +3,12 @@
 """
 Check ODE training losses from wandb
 """
+import os
 import wandb
 
-# Login to wandb
-wandb.login(key="bf3087c2d3a5361a4b222a9c1529e9017ddb630a")
+# Login to wandb. Set WANDB_API_KEY in the environment (do not hardcode keys).
+wandb_key = os.environ.get("WANDB_API_KEY")
+wandb.login(key=wandb_key)
 
 # Get the run
 api = wandb.Api()
